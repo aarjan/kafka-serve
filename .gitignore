@@ -1,0 +1,4 @@
+*.pyc
+notes
+.ipynb_checkpoints
+.pytest_cache
