@@ -1,7 +1,7 @@
 import env_config
 import json
 import producer
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse,parse_qs
 
 
@@ -40,7 +40,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             return
 
         # send the message to kafka producer
-        producer.produce(event_name["name"],env_config.CONFIG["kafka_brokers"],data)  
+        topic = event_name["name"][0]
+        producer.produce(topic,env_config.CONFIG["kafka_brokers"],data)  
 
         self.send_response(200)
         self.do_HEAD()
@@ -49,13 +50,3 @@ class RequestHandler(BaseHTTPRequestHandler):
             'message':'success',
         }).encode())
         return
-
-# if __name__ == '__main__':
-#     print('Starting server at http://localhost:8000')
-#     server = HTTPServer(('localhost', 8000), RequestHandler)
-#     try:
-#         server.serve_forever()
-#     except KeyboardInterrupt:
-#         pass
-#     server.server_close()
-#     print("\nServer closed.")
