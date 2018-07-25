@@ -26,13 +26,13 @@ def delivery_callback(err, msg):
     Produce msg to kakfa.
     The 'topic' name is used to find the avro_schema to that topic.
 """
-def produce(topic='',brokers=[],value={}):
+def produce(topic='',brokers='',value={}):
     _conf["bootstrap.servers"] = brokers
-    print(topic,schemas)
-    # if topic not in schemas.keys():
-    #     raise "Incorrect topic"
-    #     return
-    # return
+
+    if topic not in schemas.keys():
+        raise "Incorrect topic"
+        return
+
     try:
         avroProducer = AvroProducer(_conf,default_value_schema=schemas[topic])
         avroProducer.produce(topic=topic,value=value,callback=delivery_callback)
