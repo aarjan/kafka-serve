@@ -10,8 +10,8 @@ _conf = {
 
 schemas = {}
 for f_name in os.listdir('schema'):
-    with open(f_name) as schema:
-        schemas[f_name.split('.')[0]] = avro.loads(schema)
+    with open('schema/'+f_name,'rU') as schema:
+        schemas[f_name.split('.')[0]] = avro.loads(schema.read())
 
 
 def delivery_callback(err, msg):
@@ -28,13 +28,13 @@ def delivery_callback(err, msg):
 """
 def produce(topic='',brokers=[],value={}):
     _conf["bootstrap.servers"] = brokers
-    
-    if topic not in schemas.keys():
-        raise "Incorrect topic"
-        return
-
+    print(topic,schemas)
+    # if topic not in schemas.keys():
+    #     raise "Incorrect topic"
+    #     return
+    # return
     try:
-        avroProducer = AvroProducer(conf,default_value_schema=schemas[topic])
+        avroProducer = AvroProducer(_conf,default_value_schema=schemas[topic])
         avroProducer.produce(topic=topic,value=value,callback=delivery_callback)
     except avro.SerializerError as err:
         print("Error occurred",err)
