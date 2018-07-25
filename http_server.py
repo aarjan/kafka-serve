@@ -31,10 +31,16 @@ class RequestHandler(BaseHTTPRequestHandler):
         
         # parse the query param
         parsed_path = urlparse(self.path)
-        event_name = parse_qs(parsed_path.query)["name"]
-        
+        event_name = parse_qs(parsed_path.query)
+        if 'name' not in event_name.keys():
+            print(event_name,parsed_path)
+            self.send_response(400)
+            self.do_HEAD()
+            self.wfile.write(json.dumps({"error":"Incorrect param specified"}).encode())
+            return
+
         # send the message to kafka producer
-        producer.produce(topic=event_name,brokers=env_config.CONFIG["brokers"],data)  
+        producer.produce(event_name["name"],env_config.CONFIG["kafka_brokers"],data)  
 
         self.send_response(200)
         self.do_HEAD()
