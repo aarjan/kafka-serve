@@ -1,6 +1,0 @@
-[
-  "test_calculator.py::TestTDD::test_add", 
-  "test_calculator.py::TestTDD::test_first_arg_not_number_error", 
-  "test_calculator.py::TestTDD::test_not_number_error", 
-  "test_calculator.py::TestTDD::test_second_arg_not_number_error"
-]
