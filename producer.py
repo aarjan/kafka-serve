@@ -1,8 +1,9 @@
-from confluent_kafka import avro
-from confluent_kafka.avro import AvroProducer
 import time 
 import sys
 import os
+from confluent_kafka import avro
+from confluent_kafka.avro import AvroProducer
+from exceptions import ProducerException,TopicException
 
 _conf = {
     "schema.registry.url":"http://localhost:8081"
@@ -30,13 +31,12 @@ def produce(topic='',brokers='',value={}):
     _conf["bootstrap.servers"] = brokers
 
     if topic not in schemas.keys():
-        raise "Incorrect topic"
-        return
+        raise TopicException("incorrect topic name")
 
     try:
         avroProducer = AvroProducer(_conf,default_value_schema=schemas[topic])
         avroProducer.produce(topic=topic,value=value,callback=delivery_callback)
-    except avro.SerializerError as err:
-        print("Error occurred",err)
+    except Exception as err:
+        raise ProducerException("error Producing msg: ",err) 
 
     avroProducer.flush()
