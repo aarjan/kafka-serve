@@ -22,15 +22,15 @@ def Main():
     formatter = logging.Formatter(LOG_FORMAT)
     handler.setFormatter(formatter)
     log.addHandler(handler)
-
+    
     """
         Running http server that listens at /event
     """
 
     log.info('Starting server at http://localhost:8000')
     
-    http_handler = RequestHandler(log)
-    server = HTTPServer(('localhost', 8000),http_handler)
+    RequestHandler.logger = log
+    server = HTTPServer(('localhost', 8000),RequestHandler)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

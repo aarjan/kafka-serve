@@ -7,10 +7,7 @@ from exceptions import TopicException,ProducerException
 
     
 class RequestHandler(BaseHTTPRequestHandler):
-
-    def __init__(self,logger):
-        super().__init__()
-        self.logger = logger
+    logger = None
 
     def do_HEAD(self):
         self.send_header('Content-Type','application/json')
@@ -45,7 +42,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             data = json.loads(post_body.decode('utf8'))
   
         except json.JSONDecodeError as err:
-            self.log_error("error decoding JSON",{"msg":err})
+            self.log_error("error decoding JSON",msg=err)
             self.send_error(400,"JSON Err: {}".format(err))
             return
         
@@ -53,7 +50,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         parsed_path = urlparse(self.path)
         event_name = parse_qs(parsed_path.query)
         if 'name' not in event_name.keys():
-            self.log_error("incorrect param specified",{"param":event_name,"path":parsed_path.path})
+            self.log_error("incorrect param specified",param=event_name,path=parsed_path.path)
             self.send_error(400,"incorrect param specified")
             return
 
@@ -64,15 +61,15 @@ class RequestHandler(BaseHTTPRequestHandler):
             producer.produce(topic,env_config.CONFIG["kafka_brokers"],data)  
         
         except TopicException as e:
-            self.log_error(e.args[0],{"msg":topic,"exception_class":e.__cause__})
+            self.log_error(e.args[0],msg=topic,exception_class=e.__cause__)
             self.send_error(500,str(e.args))
             return
 
         except ProducerException as e:
-            self.log_error(e.message,{"msg":e.expression,"exception_class":e.__cause__})
+            self.log_error(e.message,msg=e.expression,exception_class=e.__cause__)
             self.send_error(500,str(e.args))
             return
 
-        self.log_message("successfully sent data to kafka",{"body":data})
+        self.log_message("successfully sent data to kafka",body=data)
         self.send_message("sucess")
         return
