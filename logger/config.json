@@ -1,0 +1,22 @@
+{
+    "version": 1,
+    "disable_existing_loggers": "",
+    "formatters": {
+        "json": {
+            "format": "%(message)s %(lineno)d %(pathname)s",
+            "class": "pythonjsonlogger.jsonlogger.JsonFormatter"
+        }
+    },
+    "handlers": {
+        "json": {
+            "class": "",
+            "formatter": "json"
+        }
+    },
+    "loggers": {
+        "": {
+            "handlers": ["json"],
+            "level": ""
+        }
+    }
+}
