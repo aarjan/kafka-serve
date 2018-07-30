@@ -1,4 +1,4 @@
-from logger.logger import log
+from logger import log
 from http.server import HTTPServer
 from http_server import RequestHandler
 
@@ -8,7 +8,7 @@ def Main():
     if log == None:
         raise 'log not initialized'
     
-    
+
     """
         Running http server that listens at /event
     """
