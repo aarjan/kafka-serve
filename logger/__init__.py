@@ -1,7 +1,8 @@
-import logging.config
+import os
 import json
-import config
 import structlog
+import env_config
+import logging.config
 from structlog import configure, processors, stdlib, threadlocal
 
 
@@ -26,14 +27,15 @@ log = None
 with open('logger/config.json') as f:
     dictConfig = json.loads(f.read())
         
-    conf = config.CONFIG
+    conf = env_config.CONFIG
 
     if conf["debug"] == True:
         LOGLEVEL = logging.DEBUG
     else:
-        LOGLEVEL = logging.DEBUG
+        LOGLEVEL = logging.INFO
 
     if conf["log_file_handler"] == True:
+        os.makedirs('/tmp/.event_server',exist_ok=True)
         dictConfig["handlers"]["json"]["class"] = 'logging.FileHandler'
         dictConfig["handlers"]["json"]["filename"]= '/tmp/.event_server/server.log'
     else: 
@@ -43,4 +45,4 @@ with open('logger/config.json') as f:
     logging.config.dictConfig(dictConfig)
 
     log = structlog.getLogger(conf["system_log_code"])
-    log.info("Logging initialized")     
+    log.debug("logging initialized")     

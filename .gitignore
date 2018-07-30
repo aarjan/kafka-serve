@@ -4,3 +4,4 @@ notes
 .pytest_cache
 tdd
 sam
+.vscode

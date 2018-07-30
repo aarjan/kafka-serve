@@ -1,6 +1,6 @@
 import os
 import json
-import config
+import env_config
 from kafka_producer import producer
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse,parse_qs
