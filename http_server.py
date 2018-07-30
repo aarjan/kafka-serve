@@ -1,6 +1,7 @@
-import env_config
+import os
 import json
-import producer
+import config
+from kafka_producer import producer
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse,parse_qs
 from exceptions import TopicException,ProducerException
@@ -15,7 +16,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Methods','POST,OPTIONS')
         self.end_headers()
     
-    def send_message(self,status,msg={}):
+    def send_message(self,status=200,msg={}):
         self.send_response(status)
         self.do_HEAD()
         self.wfile.write(json.dumps(msg).encode())
@@ -23,11 +24,15 @@ class RequestHandler(BaseHTTPRequestHandler):
     def send_error(self,status,error_msg=''):
         self.send_message(status,{"msg":"failed","error":error_msg})
     
-    def log_message(self,msg='',**kwargs):
+    def log_msg(self,msg='',**kwargs):
         self.logger.info(msg,**kwargs)
 
-    def log_error(self,error='',**kwargs):
-        self.logger.error(error,**kwargs)
+    def log_error(self,msg='',**kwargs):
+        self.logger.error(msg,**kwargs)
+
+    def log_fatal(self,msg='',**kwargs):
+        self.logger.fatal(msg,**kwargs)
+        os._exit(1)
 
     def do_OPTIONS(self):
         self.send_response(204)
@@ -42,7 +47,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             data = json.loads(post_body.decode('utf8'))
   
         except json.JSONDecodeError as err:
-            self.log_error("error decoding JSON",msg=err)
+            self.log_error("error decoding JSON",error=err)
             self.send_error(400,"JSON Err: {}".format(err))
             return
         
@@ -58,18 +63,20 @@ class RequestHandler(BaseHTTPRequestHandler):
         topic = event_name["name"][0]
         
         try:
-            producer.produce(topic,env_config.CONFIG["kafka_brokers"],data)  
+            producer.produce(topic,value=data)  
         
         except TopicException as e:
-            self.log_error(e.args[0],msg=topic,exception_class=e.__cause__)
-            self.send_error(500,str(e.args))
+            self.send_error(500,'{} :{}'.format(e.args[0],topic))
+            self.log_error(e.args[0],topic_name=topic,exception_class=e.__class__)
             return
 
         except ProducerException as e:
-            self.log_error(e.message,msg=e.expression,exception_class=e.__cause__)
-            self.send_error(500,str(e.args))
-            return
+            self.send_error(500,'internal error: {}'.format(e.message))
+            self.log_fatal(e.message,error=e.expression,exception_class=e.expression.__class__)
+            
+        except Exception as e:
+            self.send_error(500,str(e))
+            self.log_fatal('unknown error',error = str(e),exception_class=e.__class__)
 
-        self.log_message("successfully sent data to kafka",body=data)
-        self.send_message("sucess")
+        self.send_message(200,{"msg":"success"})
         return
