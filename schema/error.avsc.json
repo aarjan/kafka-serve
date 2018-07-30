@@ -1,0 +1,12 @@
+{
+    "name":"accesslog",
+    "type":"record",
+    "fields":[{
+        "name":"error",
+        "type":["null","string"]
+    },
+    {
+        "name":"code",
+        "type":["null","int"]
+    }]
+}
