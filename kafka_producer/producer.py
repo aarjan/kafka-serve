@@ -4,13 +4,13 @@ from logger import log
 from kafka_producer import schemas
 from confluent_kafka import avro
 from confluent_kafka.avro import AvroProducer
-from exceptions import ProducerException,TopicException
+from exceptions import ProducerException,TopicException,AvroException
 
 def delivery_callback(err, msg):
     if err:
-        log.error("Message failed delivery", error = err)
+        log.error("message failed delivery", error = err)
     else:
-        log.info("Message delivered",topic=msg.topic(), partition=msg.partition(),offset = msg.offset())
+        log.info("message delivered",topic=msg.topic(), partition=msg.partition(),offset = msg.offset())
 
 
 """
@@ -25,6 +25,10 @@ def produce(topic='',brokers='',value={}):
     avroProducer = schemas[topic]
     try:
         avroProducer.produce(topic=topic,value=value,callback=delivery_callback)
+    
+    except (avro.ClientError,avro.SerializerError,avro.KeySerializerError,avro.ValueSerializerError) as err:
+        raise AvroException('invalid avro format',err)
+
     except Exception as err:
         raise ProducerException("error producing msg",err) 
 

@@ -4,7 +4,7 @@ import config
 from kafka_producer import producer
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse,parse_qs
-from exceptions import TopicException,ProducerException
+from exceptions import TopicException,ProducerException,AvroException
 
     
 class RequestHandler(BaseHTTPRequestHandler):
@@ -24,16 +24,6 @@ class RequestHandler(BaseHTTPRequestHandler):
     def send_error(self,status,error_msg=''):
         self.send_message(status,{"msg":"failed","error":error_msg})
     
-    def log_msg(self,msg='',**kwargs):
-        self.logger.info(msg,**kwargs)
-
-    def log_error(self,msg='',**kwargs):
-        self.logger.error(msg,**kwargs)
-
-    def log_fatal(self,msg='',**kwargs):
-        self.logger.fatal(msg,**kwargs)
-        os._exit(1)
-
     def do_OPTIONS(self):
         self.send_response(204)
         self.do_HEAD()
@@ -47,7 +37,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             data = json.loads(post_body.decode('utf8'))
   
         except json.JSONDecodeError as err:
-            self.log_error("error decoding JSON",error=err)
+            self.logger.error("error decoding JSON",error=err)
             self.send_error(400,"JSON Err: {}".format(err))
             return
         
@@ -55,7 +45,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         parsed_path = urlparse(self.path)
         event_name = parse_qs(parsed_path.query)
         if 'name' not in event_name.keys():
-            self.log_error("incorrect param specified",param=event_name,path=parsed_path.path)
+            self.logger.error("incorrect param specified",param=event_name,path=parsed_path.path)
             self.send_error(400,"incorrect param specified")
             return
 
@@ -67,16 +57,18 @@ class RequestHandler(BaseHTTPRequestHandler):
         
         except TopicException as e:
             self.send_error(500,'{} :{}'.format(e.args[0],topic))
-            self.log_error(e.args[0],topic_name=topic,exception_class=e.__class__)
+            self.logger.error(e.args[0],topic_name=topic,exception_class=e.__class__)
+            return
+
+        except AvroException as e:
+            self.send_error(500,'{} , topic:{}'.format(e.message,topic))
+            self.logger.error(e.message,error=e.expression,topic_name=topic,exception_class=e.__class__)
             return
 
         except ProducerException as e:
             self.send_error(500,'internal error: {}'.format(e.message))
-            self.log_fatal(e.message,error=e.expression,exception_class=e.expression.__class__)
-            
-        except Exception as e:
-            self.send_error(500,str(e))
-            self.log_fatal('unknown error',error = str(e),exception_class=e.__class__)
-
+            self.logger.fatal(e.message,error=e.expression,exception_class=e.expression.__class__)
+            os._exit(1)
+        
         self.send_message(200,{"msg":"success"})
         return
