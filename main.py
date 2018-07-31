@@ -14,7 +14,7 @@ def Main():
     """
 
     host = env_config.CONFIG["server_host"]
-    port = int(env_config.CONFIG["server_port"])
+    port = env_config.CONFIG["server_port"]
 
     print('Starting server at http://{}:{}'.format(host,port))
     log.info('server started',host=host,port=port)

@@ -9,9 +9,9 @@ _system_log_code = os.environ.get('EVENT_SYSTEM_LOG_CODE', 'event-server')
 
 CONFIG = {
     'server_host':_server_host,
-    'server_port':_server_port,
-    'debug':_debug,
-    'log_file_handler':_log_file_handler,
+    'server_port':int(_server_port),
+    'debug':bool(_debug),
+    'log_file_handler':bool(_log_file_handler),
     'kafka_brokers':_kafka_brokers,
     'system_log_code':_system_log_code,
 }
