@@ -5,3 +5,5 @@ notes
 tdd
 sam
 .vscode
+locust/
+run.env
