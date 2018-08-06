@@ -40,7 +40,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.logger.error("error decoding JSON",error=err)
             self.send_error(400,"JSON Err: {}".format(err))
             return
-        
+            
         # parse the query param
         parsed_path = urlparse(self.path)
         event_name = parse_qs(parsed_path.query)
@@ -56,13 +56,13 @@ class RequestHandler(BaseHTTPRequestHandler):
             producer.produce(topic,value=data)  
         
         except TopicException as e:
-            self.send_error(500,'{} :{}'.format(e.args[0],topic))
+            self.send_error(400,'{} :{}'.format(e.args[0],topic))
             self.logger.error(e.args[0],topic_name=topic,exception_class=e.__class__)
             return
 
         except AvroException as e:
-            self.send_error(500,'{} , topic:{}'.format(e.message,topic))
-            self.logger.error(e.message,error=e.expression,topic_name=topic,exception_class=e.__class__)
+            self.send_error(422,'{} , topic:{}'.format(e.message,topic))
+            self.logger.error(e.message,error=e.expression,topic_name=topic,exception_class=e.expression.__class__)
             return
 
         except ProducerException as e:
@@ -72,3 +72,4 @@ class RequestHandler(BaseHTTPRequestHandler):
         
         self.send_message(200,{"msg":"success"})
         return
+    
