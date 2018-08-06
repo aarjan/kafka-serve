@@ -3,6 +3,7 @@ import sys
 from logger import log
 from kafka_producer import schemas
 from confluent_kafka import avro
+from avro.schema import AvroException as AvroError
 from confluent_kafka.avro import AvroProducer
 from exceptions import ProducerException,TopicException,AvroException
 
@@ -26,9 +27,10 @@ def produce(topic='',brokers='',value={}):
     try:
         avroProducer.produce(topic=topic,value=value,callback=delivery_callback)
     
-    except (avro.ClientError,avro.SerializerError,avro.KeySerializerError,avro.ValueSerializerError) as err:
-        raise AvroException('invalid avro format',err)
+    except (avro.ClientError,avro.SerializerError,avro.KeySerializerError,avro.ValueSerializerError,AvroError) as err:
+        raise AvroException('invalid avro msg',err)
 
+    # TODO: Check for KafkaException
     except Exception as err:
         raise ProducerException("error producing msg",err) 
 
