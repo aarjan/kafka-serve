@@ -8,7 +8,7 @@
 ## Dependencies
 
 - Python specific dependencies are in the [requirements.txt](requirements.txt)
-- Confluent Kafka with schema registry [installer](https://docs.confluent.io/current/installation/installing_cp/zip-tar.html)
+- Confluent Kafka with schema registry [installation file](https://docs.confluent.io/current/installation/installing_cp/zip-tar.html)
 
 ## Run
 
